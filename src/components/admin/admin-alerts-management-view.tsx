@@ -387,7 +387,7 @@ export const AdminAlertsManagementView = ({
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
         <div className="hidden md:block">
           <TableScrollRegion>
-            <table className="min-w-[920px] text-left text-sm">
+            <table className="w-full min-w-[920px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
               <tr>
                 <th className="whitespace-nowrap px-4 py-3">ลำดับ</th>

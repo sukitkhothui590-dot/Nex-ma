@@ -242,11 +242,11 @@ export const AdminCustomerManagementView = ({
 
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
         <TableScrollRegion>
-          <table className="min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
               <tr>
                 <th className="px-4 py-3">ลูกค้า</th>
-                <th className="px-4 py-3">อีเมลติดต่อ</th>
+                <th className="min-w-0 px-4 py-3">อีเมลติดต่อ</th>
                 <th className="hidden px-4 py-3 sm:table-cell">เว็บไซต์</th>
                 <th className="hidden px-4 py-3 md:table-cell">บริการ</th>
                 <th className="px-4 py-3">สถานะ</th>
@@ -275,7 +275,7 @@ export const AdminCustomerManagementView = ({
                         </button>
                         <p className="text-xs text-slate-400 sm:hidden">{sites} เว็บ · {subs} บริการ</p>
                       </td>
-                      <td className="max-w-[200px] truncate px-4 py-3 text-slate-600" title={row.contactEmail}>
+                      <td className="min-w-0 max-w-[220px] px-4 py-3 text-slate-600 sm:max-w-none sm:break-words" title={row.contactEmail}>
                         {row.contactEmail}
                       </td>
                       <td className="hidden px-4 py-3 tabular-nums text-slate-700 sm:table-cell">{sites}</td>

@@ -144,7 +144,7 @@ export const AdminAuditView = ({
       {fromDatabase && !missingTable ? (
         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
           <TableScrollRegion>
-            <table className="min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/80 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <th className="px-3 py-2.5">เวลา</th>

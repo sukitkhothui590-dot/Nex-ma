@@ -878,7 +878,7 @@ export const AdminWebsiteManagementView = ({
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
         <div className="hidden md:block">
           <TableScrollRegion>
-            <table className="min-w-[1180px] text-left text-sm">
+            <table className="w-full min-w-[1180px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
               <tr>
                 <th className="w-10 px-2 py-3 text-center">

@@ -12,7 +12,7 @@ export function TableScrollRegion({ children, mobileScrollHint, className }: Tab
   const hint = mobileScrollHint ?? "เลื่อนซ้าย-ขวาเพื่อดูทุกคอลัมน์";
   return (
     <div className={cn("min-w-0", className)}>
-      <div className="overflow-x-auto overscroll-x-contain touch-pan-x [-webkit-overflow-scrolling:touch] sm:scrollbar-none">
+      <div className="w-full overflow-x-auto overscroll-x-contain touch-pan-x [-webkit-overflow-scrolling:touch] sm:scrollbar-none">
         {children}
       </div>
       <p className="mt-2 flex items-start gap-1.5 px-0.5 text-[11px] leading-snug text-slate-500 md:hidden">

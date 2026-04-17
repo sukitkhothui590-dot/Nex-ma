@@ -159,7 +159,7 @@ export const AdminRenewalsPanel = ({
             <p className="text-xs text-slate-500">แถวจากเว็บไซต์ใช้โลโก้ของเว็บนั้น — แถวอื่นใช้เว็บแรกของลูกค้า</p>
           </div>
           <TableScrollRegion>
-            <table className="min-w-[680px] text-left text-sm">
+            <table className="w-full min-w-[680px] text-left text-sm">
               <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
                 <tr>
                   <th className="px-4 py-3">ลูกค้า</th>
