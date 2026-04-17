@@ -1,0 +1,303 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --danger: #be123c;
+  --warning: #b45309;
+  --success: #047857;
+  --border: #dbe3ee;
+  --ring: #6366f1;
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
+  --shadow-medium: 0 14px 34px rgba(15, 23, 42, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ซ่อนแถบเลื่อน แต่ยังเลื่อนได้ด้วยล้อ / ทัช / คีย์บอร์ด */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+* {
+  border-color: var(--border);
+}
+
+.app-shell {
+  @apply min-h-full bg-background text-foreground;
+}
+
+.page-shell {
+  @apply space-y-8;
+}
+
+.section-surface {
+  @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm;
+}
+
+.kpi-card {
+  @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm;
+}
+
+.table-surface {
+  @apply overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm;
+}
+
+.interactive-soft {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.interactive-soft:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Login hero — subtle motion (respect reduced motion) */
+@keyframes login-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-14px) scale(1.04);
+  }
+}
+
+@keyframes login-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(10px, -8px);
+  }
+  66% {
+    transform: translate(-8px, 6px);
+  }
+}
+
+@keyframes login-glow {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes login-shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+.login-anim-float {
+  animation: login-float 7s ease-in-out infinite;
+}
+
+.login-anim-float-slow {
+  animation: login-float 10s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+.login-anim-drift {
+  animation: login-drift 12s ease-in-out infinite;
+}
+
+.login-anim-drift-reverse {
+  animation: login-drift 14s ease-in-out infinite reverse;
+  animation-delay: -3s;
+}
+
+.login-anim-glow {
+  animation: login-glow 8s ease-in-out infinite;
+}
+
+.login-anim-glow-delayed {
+  animation: login-glow 9s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+.login-anim-shimmer {
+  animation: login-shimmer 12s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-anim-float,
+  .login-anim-float-slow,
+  .login-anim-drift,
+  .login-anim-drift-reverse,
+  .login-anim-glow,
+  .login-anim-glow-delayed,
+  .login-anim-shimmer {
+    animation: none !important;
+  }
+}
+
+/* Admin dashboard — light motion (respect reduced motion) */
+@keyframes dash-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dash-blob {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(-18px, 12px) scale(1.06);
+    opacity: 0.55;
+  }
+}
+
+@keyframes dash-cta-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes dash-soft-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.dash-soft-blink {
+  animation: dash-soft-blink 2.1s ease-in-out infinite;
+}
+
+.dash-enter {
+  animation: dash-enter 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dash-enter-delay-1 {
+  animation-delay: 0.06s;
+}
+.dash-enter-delay-2 {
+  animation-delay: 0.12s;
+}
+.dash-enter-delay-3 {
+  animation-delay: 0.18s;
+}
+.dash-enter-delay-4 {
+  animation-delay: 0.24s;
+}
+.dash-enter-delay-5 {
+  animation-delay: 0.32s;
+}
+.dash-enter-delay-6 {
+  animation-delay: 0.38s;
+}
+.dash-enter-delay-7 {
+  animation-delay: 0.44s;
+}
+.dash-enter-delay-8 {
+  animation-delay: 0.5s;
+}
+.dash-enter-delay-9 {
+  animation-delay: 0.56s;
+}
+
+.dash-bg-blob {
+  animation: dash-blob 18s ease-in-out infinite alternate;
+}
+
+.dash-card-lift {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.dash-card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.dash-cta-shimmer {
+  animation: dash-cta-shimmer 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-enter,
+  .dash-bg-blob,
+  .dash-cta-shimmer,
+  .dash-soft-blink {
+    animation: none !important;
+  }
+
+  .dash-card-lift:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .interactive-soft:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
