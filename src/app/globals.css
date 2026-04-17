@@ -68,7 +68,7 @@ body {
 }
 
 .page-shell {
-  @apply space-y-8;
+  @apply space-y-6 sm:space-y-8;
 }
 
 .section-surface {

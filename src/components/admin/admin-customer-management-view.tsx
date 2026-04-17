@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { StatusChip } from "@/components/ui/status-chip";
+import { TableScrollRegion } from "@/components/ui/table-scroll-region";
 import { primarySiteUrl } from "@/lib/utils/website-urls";
 
 export interface AdminCustomerManagementViewProps {
@@ -240,8 +241,8 @@ export const AdminCustomerManagementView = ({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="scrollbar-none overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+        <TableScrollRegion>
+          <table className="min-w-[640px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
               <tr>
                 <th className="px-4 py-3">ลูกค้า</th>
@@ -314,7 +315,7 @@ export const AdminCustomerManagementView = ({
               )}
             </tbody>
           </table>
-        </div>
+        </TableScrollRegion>
         <div className="flex flex-col gap-2 border-t border-slate-100 px-4 py-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>
             แสดง {startItem}-{endItem} จาก {filtered.length} รายการ

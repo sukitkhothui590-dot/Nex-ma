@@ -8,6 +8,7 @@ import { mergeSubscriptionsWithWebsiteExpiries } from "@/lib/utils/renewals";
 import { StatusChip } from "@/components/ui/status-chip";
 import { WebsiteLogo } from "@/components/ui/website-logo";
 import { StatCard } from "@/components/layout/stat-card";
+import { TableScrollRegion } from "@/components/ui/table-scroll-region";
 
 const serviceLabel: Record<ServiceSubscription["serviceType"], string> = {
   domain: "โดเมน",
@@ -157,8 +158,8 @@ export const AdminRenewalsPanel = ({
             <h3 className="text-sm font-semibold text-slate-900">รายการบริการ</h3>
             <p className="text-xs text-slate-500">แถวจากเว็บไซต์ใช้โลโก้ของเว็บนั้น — แถวอื่นใช้เว็บแรกของลูกค้า</p>
           </div>
-          <div className="scrollbar-none overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
+          <TableScrollRegion>
+            <table className="min-w-[680px] text-left text-sm">
               <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
                 <tr>
                   <th className="px-4 py-3">ลูกค้า</th>
@@ -248,7 +249,7 @@ export const AdminRenewalsPanel = ({
                 )}
               </tbody>
             </table>
-          </div>
+          </TableScrollRegion>
         </div>
 
         <aside className="min-w-0 space-y-3 xl:sticky xl:top-4">

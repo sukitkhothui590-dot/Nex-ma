@@ -9,6 +9,7 @@ import { ADMIN_ALERTS_CHANGED_EVENT } from "@/lib/admin-events";
 import { WebsiteLogo } from "@/components/ui/website-logo";
 import { StatusChip } from "@/components/ui/status-chip";
 import { Modal } from "@/components/ui/modal";
+import { TableScrollRegion } from "@/components/ui/table-scroll-region";
 
 export interface AdminAlertsManagementViewProps {
   alerts: Alert[];
@@ -384,8 +385,9 @@ export const AdminAlertsManagementView = ({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="scrollbar-none overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+        <div className="hidden md:block">
+          <TableScrollRegion>
+            <table className="min-w-[920px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
               <tr>
                 <th className="whitespace-nowrap px-4 py-3">ลำดับ</th>
@@ -528,7 +530,88 @@ export const AdminAlertsManagementView = ({
               )}
             </tbody>
           </table>
+          </TableScrollRegion>
         </div>
+
+        <div className="space-y-3 p-3 md:hidden">
+          {rows.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-sm text-slate-500">{emptyTableHint}</p>
+          ) : (
+            rows.map((row) => {
+              const w = websiteById(row.websiteId);
+              return (
+                <article
+                  key={row.id}
+                  className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">เว็บไซต์</p>
+                      {w ? (
+                        <div className="mt-1 flex items-center gap-2">
+                          <WebsiteLogo
+                            instanceId={row.id}
+                            name={w.name}
+                            frontendUrl={w.frontendUrl}
+                            backendUrl={w.backendUrl}
+                            logoUrl={w.logoUrl}
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-slate-900">{w.name}</p>
+                            <Link
+                              href={`/admin/websites?q=${encodeURIComponent(w.name)}`}
+                              className="text-xs font-semibold text-indigo-700 hover:underline"
+                            >
+                              ดูเว็บไซต์
+                            </Link>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-sm text-slate-400">—</p>
+                      )}
+                    </div>
+                    <StatusChip label={severityLabel(row.severity)} tone={severityTone(row.severity)} />
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-800">{row.message}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <StatusChip label={alertStatusLabel(row.status)} tone={statusTone(row.status)} />
+                    <span className="text-xs text-slate-500">{formatThDateTime(row.createdAt)}</span>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+                    {row.status === "new" ? (
+                      <button
+                        type="button"
+                        disabled={pendingId === row.id}
+                        onClick={() => void acknowledge(row.id)}
+                        className="min-h-10 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-50 sm:flex-none"
+                      >
+                        รับทราบ
+                      </button>
+                    ) : null}
+                    {row.status !== "resolved" ? (
+                      <button
+                        type="button"
+                        disabled={pendingId === row.id}
+                        onClick={() => void resolveAlert(row.id)}
+                        className="min-h-10 flex-1 rounded-xl bg-indigo-600 px-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 sm:flex-none"
+                      >
+                        ปิดเรื่อง
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setDetailAlert(row)}
+                      className="min-h-10 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:w-auto"
+                    >
+                      รายละเอียด
+                    </button>
+                  </div>
+                </article>
+              );
+            })
+          )}
+        </div>
+
         <div className="flex flex-col gap-2 border-t border-slate-100 px-4 py-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>
             แสดง {startItem}-{endItem} จาก {filtered.length} รายการ

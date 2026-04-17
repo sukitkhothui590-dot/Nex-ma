@@ -17,6 +17,7 @@ import {
   type EffectiveProfile,
 } from "@/lib/services/mock-user-profile";
 import { UserProfileSettingsModal } from "@/components/layout/user-profile-settings-modal";
+import { useAdminMobileNav } from "@/components/layout/admin-mobile-nav-context";
 
 const routeTitles: Record<string, string> = {
   "/admin/dashboard": "แดชบอร์ด",
@@ -39,6 +40,7 @@ const routeSubtitles: Partial<Record<string, string>> = {
 };
 
 export const AdminMainHeader = () => {
+  const { openMobileNav } = useAdminMobileNav();
   const pathname = usePathname();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
@@ -112,14 +114,32 @@ export const AdminMainHeader = () => {
   const profileInitial = profile.name.trim().charAt(0).toUpperCase() || "A";
 
   return (
-    <header className="sticky top-0 z-40 flex shrink-0 items-start justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur-md sm:items-center sm:px-6 sm:py-3.5">
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-700/90">ระบบ MA Alert · ผู้ดูแล</p>
-        <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">{title}</h1>
-        {subtitle ? <p className="mt-0.5 truncate text-xs text-slate-500">{subtitle}</p> : null}
+    <header className="sticky top-0 z-30 flex shrink-0 items-start justify-between gap-2 border-b border-slate-200/80 bg-white px-3 py-2.5 sm:items-center sm:gap-3 sm:px-6 sm:py-3.5 md:z-40 md:bg-white/80 md:backdrop-blur-md">
+      <div className="flex min-w-0 flex-1 items-start gap-2 sm:items-center sm:gap-3">
+        <button
+          type="button"
+          className="mt-0.5 flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-700 shadow-sm md:hidden"
+          onClick={openMobileNav}
+          aria-label="เปิดเมนูนำทาง"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+        <div className="min-w-0 flex-1 pr-1">
+          <p className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-indigo-700/90 sm:text-[11px]">
+            ระบบ MA Alert · ผู้ดูแล
+          </p>
+          <h1 className="line-clamp-2 text-base font-semibold leading-snug tracking-tight text-slate-900 sm:text-lg md:text-xl">
+            {title}
+          </h1>
+          {subtitle ? (
+            <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-500 sm:text-xs">{subtitle}</p>
+          ) : null}
+        </div>
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 sm:gap-2">
+      <div className="flex max-w-[calc(100vw-12rem)] shrink-0 flex-wrap items-center justify-end gap-0.5 sm:max-w-none sm:gap-2">
         <Link
           href="/admin/alerts"
           className="relative rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 focus-visible:ring-offset-2"
@@ -259,8 +279,17 @@ export const AdminMainHeader = () => {
 
         <UserProfileSettingsModal role="admin" open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
-        <Button variant="secondary" onClick={logout} className="border-slate-200 text-sm">
-          ออกจากระบบ
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={logout}
+          aria-label="ออกจากระบบ"
+          className="touch-manipulation border-slate-200 px-2.5 text-xs sm:px-4 sm:text-sm"
+        >
+          <span className="hidden sm:inline">ออกจากระบบ</span>
+          <span className="sm:hidden" aria-hidden>
+            ออก
+          </span>
         </Button>
       </div>
     </header>

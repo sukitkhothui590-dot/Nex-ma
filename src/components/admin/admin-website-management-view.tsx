@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/ui/status-chip";
 import { PageHeader } from "@/components/layout/page-header";
+import { TableScrollRegion } from "@/components/ui/table-scroll-region";
 import { createWebsiteAction, renewWebsiteContractAction, updateWebsiteAction } from "@/app/admin/websites/actions";
 import { ADMIN_ALERTS_CHANGED_EVENT } from "@/lib/admin-events";
 import type { WebsiteAlertStats } from "@/lib/utils/website-alert-stats";
@@ -875,8 +876,9 @@ export const AdminWebsiteManagementView = ({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="scrollbar-none overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+        <div className="hidden md:block">
+          <TableScrollRegion>
+            <table className="min-w-[1180px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold text-slate-600">
               <tr>
                 <th className="w-10 px-2 py-3 text-center">
@@ -1100,7 +1102,133 @@ export const AdminWebsiteManagementView = ({
               )}
             </tbody>
           </table>
+          </TableScrollRegion>
         </div>
+
+        <div className="space-y-3 p-3 md:hidden">
+          {rows.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-sm text-slate-500">
+              ไม่พบเว็บไซต์ตามเงื่อนไข
+            </p>
+          ) : (
+            rows.map((row, index) => {
+              const st = alertStatsByWebsiteId[row.id];
+              const open = st?.open ?? 0;
+              const urgent = st && st.newCount > 0;
+              const url = primarySiteUrl(row);
+              return (
+                <article
+                  key={row.id}
+                  className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm"
+                >
+                  <div className="flex gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(row.id)}
+                      onChange={() => toggleRowSelected(row.id)}
+                      className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      aria-label={`เลือก ${row.name}`}
+                    />
+                    <WebsiteLogo
+                      instanceId={row.id}
+                      name={row.name}
+                      frontendUrl={row.frontendUrl}
+                      backendUrl={row.backendUrl}
+                      logoUrl={row.logoUrl}
+                      className="shadow-sm"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold leading-snug text-slate-900">{row.name}</p>
+                      <p className="text-xs text-slate-500">
+                        <Link href={`/admin/customers`} className="text-indigo-700 hover:underline">
+                          {customerName(row.customerId)}
+                        </Link>
+                        {primarySiteUrl(row) ? (
+                          <span className="text-slate-400"> · {getHostname(primarySiteUrl(row))}</span>
+                        ) : null}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <StatusChip
+                      label={row.status === "online" ? "ออนไลน์" : "ออฟไลน์"}
+                      tone={row.status === "online" ? "success" : "danger"}
+                    />
+                    <span className="inline-flex items-center gap-1.5 text-xs text-slate-600">
+                      <span
+                        className={`h-2 w-2 rounded-full ${row.contractStatus === "active" ? "bg-indigo-500" : "bg-amber-500"}`}
+                        aria-hidden
+                      />
+                      {row.contractStatus === "active" ? "สัญญาใช้งาน" : "ไม่ใช้งาน"}
+                    </span>
+                    {open > 0 ? (
+                      <Link
+                        href={`/admin/alerts?websiteId=${encodeURIComponent(row.id)}`}
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${
+                          urgent ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-900"
+                        }`}
+                      >
+                        แจ้งเตือน {open} ค้าง
+                      </Link>
+                    ) : null}
+                  </div>
+                  <div className="mt-2 text-xs text-slate-500">
+                    {row.contractExpiryDate ? (
+                      <span>หมดสัญญา {formatThDate(`${row.contractExpiryDate}T00:00:00.000Z`)}</span>
+                    ) : (
+                      <span>หมดสัญญา —</span>
+                    )}
+                    <span className="text-slate-300"> · </span>
+                    <span>สร้าง {formatThDate(row.createdAt)}</span>
+                  </div>
+                  <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3 sm:flex-row sm:flex-wrap">
+                    {url ? (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-10 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700"
+                      >
+                        เข้าสู่เว็บไซต์
+                      </a>
+                    ) : null}
+                    <div className="flex flex-1 flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDetailSite(row)}
+                        className="min-h-10 flex-1 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                      >
+                        รายละเอียด
+                      </button>
+                      {fromDatabase ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRenewDate(defaultRenewalDate(row.contractExpiryDate));
+                            setRenewError(null);
+                            setRenewSite(row);
+                          }}
+                          className="min-h-10 flex-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-900 hover:bg-emerald-100"
+                        >
+                          ต่อสัญญา
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setEditSite(row)}
+                        className="min-h-10 flex-1 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      >
+                        {fromDatabase ? "แก้ไข" : "แก้ไข (จำลอง)"}
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[11px] text-slate-400">ลำดับในหน้านี้: {(page - 1) * pageSize + index + 1}</p>
+                </article>
+              );
+            })
+          )}
+        </div>
+
         <div className="flex flex-col gap-2 border-t border-slate-100 px-4 py-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>
             แสดง {startItem}-{endItem} จาก {filtered.length} รายการ

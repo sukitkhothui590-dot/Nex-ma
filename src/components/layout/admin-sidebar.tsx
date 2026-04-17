@@ -5,7 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getNewAlertsCountAction } from "@/app/admin/alerts/actions";
 import { ADMIN_ALERTS_CHANGED_EVENT } from "@/lib/admin-events";
+import { useAdminMobileNav } from "@/components/layout/admin-mobile-nav-context";
 import { cn } from "@/lib/utils/cn";
+import { useMinWidthMd } from "@/lib/utils/use-min-width-md";
 
 const STORAGE_KEY = "admin-sidebar-collapsed";
 
@@ -81,8 +83,12 @@ function ChevronRightTiny({ className }: { className?: string }) {
 
 export const AdminSidebar = () => {
   const activePath = usePathname();
+  const { mobileNavOpen, closeMobileNav } = useAdminMobileNav();
+  const isMd = useMinWidthMd();
   const [collapsed, setCollapsed] = useState(false);
   const [alertBadge, setAlertBadge] = useState<number | null>(null);
+  /** มือถือ: แสดงเมนูเต็มเสมอเมื่อเปิด drawer — ไม่ย่อไอคอนอย่างเดียว */
+  const effectiveCollapsed = collapsed && isMd;
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -129,22 +135,25 @@ export const AdminSidebar = () => {
   return (
     <aside
       className={cn(
-        "flex h-full min-h-0 shrink-0 flex-col border-r border-slate-200/80 bg-white/75 backdrop-blur-md transition-[width] duration-300 ease-out",
-        collapsed ? "w-[72px]" : "w-[248px]",
+        "flex h-full min-h-0 flex-col border-r border-slate-200/80 bg-white/75 backdrop-blur-md transition-[transform,width] duration-300 ease-out max-md:bg-white max-md:backdrop-blur-none",
+        "md:relative md:z-30 md:shrink-0 md:translate-x-0",
+        effectiveCollapsed ? "md:w-[72px]" : "md:w-[248px]",
+        "max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-[min(280px,88vw)] max-md:shadow-2xl",
+        mobileNavOpen ? "max-md:translate-x-0" : "max-md:pointer-events-none max-md:-translate-x-full",
       )}
     >
-      <div className={cn("flex pt-1", collapsed ? "justify-center px-2" : "justify-end px-4")}>
+      <div className={cn("flex pt-1 max-md:hidden", effectiveCollapsed ? "justify-center px-2" : "justify-end px-4")}>
         <button
           type="button"
           onClick={toggleCollapsed}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 focus-visible:ring-offset-2",
+            "flex h-9 w-9 touch-manipulation items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 focus-visible:ring-offset-2",
           )}
-          aria-expanded={!collapsed}
-          aria-label={collapsed ? "ขยายเมนู" : "ย่อเมนู"}
+          aria-expanded={!effectiveCollapsed}
+          aria-label={effectiveCollapsed ? "ขยายเมนู" : "ย่อเมนู"}
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            {collapsed ? (
+            {effectiveCollapsed ? (
               <path d="m9 18 6-6-6-6" />
             ) : (
               <g>
@@ -157,19 +166,20 @@ export const AdminSidebar = () => {
       </div>
 
       {/* Brand */}
-      <div className={cn("border-b border-slate-100", collapsed ? "px-2 py-3" : "px-4 py-3")}>
+      <div className={cn("border-b border-slate-100", effectiveCollapsed ? "px-2 py-3 max-md:px-4" : "px-4 py-3")}>
         <Link
           href="/admin/dashboard"
+          onClick={() => closeMobileNav()}
           className={cn(
             "flex items-center gap-3 rounded-xl transition hover:bg-slate-50",
-            collapsed ? "justify-center p-1" : "px-1 py-0.5",
+            effectiveCollapsed ? "justify-center p-1 max-md:justify-start" : "px-1 py-0.5",
           )}
           title="แดชบอร์ด"
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-700 text-sm font-bold tracking-tight text-white shadow-sm">
             M
           </div>
-          {!collapsed ? (
+          {!effectiveCollapsed ? (
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold tracking-tight text-slate-900">
                 MA Alert <span className="text-indigo-600">&gt;</span>
@@ -186,7 +196,7 @@ export const AdminSidebar = () => {
           <p
             className={cn(
               "mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400",
-              collapsed && "sr-only",
+              effectiveCollapsed && "sr-only",
             )}
           >
             เมนู
@@ -199,10 +209,11 @@ export const AdminSidebar = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  title={collapsed ? item.label : undefined}
+                  onClick={() => closeMobileNav()}
+                  title={effectiveCollapsed ? item.label : undefined}
                   className={cn(
-                    "group relative flex items-center rounded-xl py-2.5 text-sm font-semibold transition-colors motion-safe:duration-200",
-                    collapsed ? "justify-center px-0" : "gap-3 pl-3 pr-2",
+                    "group relative flex touch-manipulation items-center rounded-xl py-2.5 text-sm font-semibold transition-colors motion-safe:duration-200",
+                    effectiveCollapsed ? "justify-center px-0" : "gap-3 pl-3 pr-2",
                     active
                       ? "bg-indigo-50 text-indigo-950 shadow-sm shadow-slate-900/5"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
@@ -214,20 +225,20 @@ export const AdminSidebar = () => {
                       aria-hidden
                     />
                   ) : null}
-                  <span className={cn("relative flex shrink-0", collapsed && hasAlert && "relative")}>
+                  <span className={cn("relative flex shrink-0", effectiveCollapsed && hasAlert && "relative")}>
                     <NavIcon
                       name={item.icon}
                       className={cn(
                         active ? "text-indigo-700" : "text-slate-500 group-hover:text-slate-800",
                       )}
                     />
-                    {collapsed && hasAlert ? (
+                    {effectiveCollapsed && hasAlert ? (
                       <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[10px] font-bold text-white">
                         {item.badge}
                       </span>
                     ) : null}
                   </span>
-                  {!collapsed ? (
+                  {!effectiveCollapsed ? (
                     <>
                       <span className="relative min-w-0 flex-1 truncate">{item.label}</span>
                       {hasAlert ? (
@@ -253,7 +264,7 @@ export const AdminSidebar = () => {
           <p
             className={cn(
               "mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400",
-              collapsed && "sr-only",
+              effectiveCollapsed && "sr-only",
             )}
           >
             กลุ่ม
@@ -265,10 +276,11 @@ export const AdminSidebar = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  title={collapsed ? item.label : undefined}
+                  onClick={() => closeMobileNav()}
+                  title={effectiveCollapsed ? item.label : undefined}
                   className={cn(
-                    "group relative flex items-center rounded-xl py-2.5 text-sm font-semibold transition-colors motion-safe:duration-200",
-                    collapsed ? "justify-center px-0" : "gap-3 pl-3 pr-2",
+                    "group relative flex touch-manipulation items-center rounded-xl py-2.5 text-sm font-semibold transition-colors motion-safe:duration-200",
+                    effectiveCollapsed ? "justify-center px-0" : "gap-3 pl-3 pr-2",
                     active
                       ? "bg-indigo-50 text-indigo-950"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
@@ -281,7 +293,7 @@ export const AdminSidebar = () => {
                     />
                   ) : null}
                   <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full shadow-sm", item.dotClass)} aria-hidden />
-                  {!collapsed ? (
+                  {!effectiveCollapsed ? (
                     <>
                       <span className="relative min-w-0 flex-1 truncate">{item.label}</span>
                       <ChevronRightTiny className="text-slate-400 group-hover:text-slate-600" />
