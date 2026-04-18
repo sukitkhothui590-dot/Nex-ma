@@ -14,6 +14,7 @@ import type { AdminAutomationPageData } from "@/lib/data/fetch-admin-automation-
 import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/layout/stat-card";
 import { WebsiteStatusPinger } from "@/components/admin/website-status-pinger";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { cn } from "@/lib/utils/cn";
 import { normalizeScheduleTimes } from "@/lib/utils/website-status-schedule";
 
@@ -59,18 +60,25 @@ export const AdminAutomationView = ({
   const defaultSlots = useMemo(() => ["09:00", "12:00", "18:00"], []);
   const [scheduleSlots, setScheduleSlots] = useState<string[]>(defaultSlots);
 
+  /** ซิงก์จากเซิร์ฟเวอร์เมื่อค่าตารางจริงเปลี่ยน — ไม่ผูกกับ object reference ของ config */
+  const digestScheduleSyncKey = useMemo(() => {
+    const c = websiteStatusRule?.config;
+    if (!c || typeof c !== "object") return "";
+    const st = normalizeScheduleTimes((c as { scheduleTimes?: unknown }).scheduleTimes);
+    return st.join("\u001f");
+  }, [websiteStatusRule]);
+
   useEffect(() => {
-    const st = normalizeScheduleTimes(websiteStatusRule?.config?.scheduleTimes);
+    const c = websiteStatusRule?.config;
+    const st = normalizeScheduleTimes(
+      c && typeof c === "object" ? (c as { scheduleTimes?: unknown }).scheduleTimes : undefined,
+    );
     if (st.length > 0) {
       setScheduleSlots(st);
       return;
     }
-    if (websiteStatusRule?.config && "intervalMinutes" in websiteStatusRule.config) {
-      setScheduleSlots(defaultSlots);
-      return;
-    }
     setScheduleSlots(defaultSlots);
-  }, [websiteStatusRule?.config, defaultSlots]);
+  }, [digestScheduleSyncKey, websiteStatusRule, defaultSlots]);
 
   const toggle = (id: string, next: boolean) => {
     if (!fromDatabase) return;
@@ -280,22 +288,28 @@ export const AdminAutomationView = ({
                   </p>
                   {r.id === "website_status_digest" ? (
                     <div className="mt-3 rounded-xl border border-sky-100 bg-sky-50/80 p-3">
-                      <p className="text-xs font-medium text-slate-700">เวลาส่งของแต่ละวัน (หลายช่วงได้)</p>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-medium text-slate-700">
+                          เวลาส่งของแต่ละวัน · <span className="font-semibold text-sky-700">ฟอร์แมต 24 ชม.</span>
+                        </p>
+                        <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-slate-600 ring-1 ring-slate-200">
+                          TZ: Asia/Bangkok
+                        </span>
+                      </div>
                       <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-                        ใช้เวลา <span className="font-semibold text-slate-700">Asia/Bangkok</span> — ตั้ง cron เรียกปลายทาง{" "}
-                        <span className="font-mono">/api/cron/website-status</span> ถี่พอ (แนะนำทุก 5 นาที) เพื่อไม่พลาดช่วง
+                        ระบบจับรอบทุก 5 นาที — ตั้งเวลาใดก็ได้ (เช่น <span className="font-mono">09:00</span>,{" "}
+                        <span className="font-mono">13:30</span>, <span className="font-mono">21:45</span>)
                       </p>
                       <ul className="mt-2 space-y-2">
                         {scheduleSlots.map((slot, idx) => (
                           <li key={`slot-${idx}`} className="flex flex-wrap items-center gap-2">
-                            <input
-                              type="time"
+                            <TimeInput24
                               value={slot}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setScheduleSlots((prev) => prev.map((s, i) => (i === idx ? v : s)));
-                              }}
-                              className="h-9 rounded-lg border border-slate-200 bg-white px-2 font-mono text-sm text-slate-900"
+                              disabled={!fromDatabase || automationBusy}
+                              onChange={(v) =>
+                                setScheduleSlots((prev) => prev.map((s, i) => (i === idx ? v : s)))
+                              }
+                              ariaLabel={`ช่วงเวลาที่ ${idx + 1}`}
                             />
                             <button
                               type="button"
@@ -326,12 +340,23 @@ export const AdminAutomationView = ({
                           {isIntervalPending ? "บันทึก…" : "บันทึกเวลา"}
                         </button>
                       </div>
-                      <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
-                        ตั้ง <span className="font-mono">CRON_SECRET</span> + <span className="font-mono">SUPABASE_SERVICE_ROLE_KEY</span>{" "}
-                        แล้ว <span className="font-mono">Authorization: Bearer …</span> · ถ้าไม่มี{" "}
-                        <span className="font-mono">scheduleTimes</span> ใน config จะใช้โหมดทุก N นาที (
-                        <span className="font-mono">intervalMinutes</span>) แบบเดิม
-                      </p>
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-[11px] leading-relaxed text-amber-900">
+                        <p className="font-semibold">ให้ทำงานแม้ไม่เปิดหน้า web:</p>
+                        <ol className="mt-1 list-decimal space-y-1 pl-4">
+                          <li>
+                            ตั้ง env บน Vercel: <span className="font-mono">CRON_SECRET</span> (สุ่มยาวๆ) +{" "}
+                            <span className="font-mono">SUPABASE_SERVICE_ROLE_KEY</span>
+                          </li>
+                          <li>
+                            ใช้ Vercel Cron (ไฟล์ <span className="font-mono">vercel.json</span> พร้อมแล้ว — Pro plan)
+                            หรือ external cron เช่น <span className="font-mono">cron-job.org</span> / UptimeRobot (Hobby plan)
+                          </li>
+                          <li>
+                            ยิง <span className="font-mono">GET /api/cron/website-status</span> ทุก 5 นาที พร้อม header{" "}
+                            <span className="font-mono">Authorization: Bearer &lt;CRON_SECRET&gt;</span>
+                          </li>
+                        </ol>
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -393,7 +418,7 @@ export const AdminAutomationView = ({
                           {statusLabel(q.status)}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-[11px] font-medium text-indigo-800">{kindLabel(q.kind)}</p>
+                      <p className="mt-0.5 text-[11px] font-medium text-indigo-800">{kindLabel(q.kind ?? "")}</p>
                       {q.detail ? <p className="mt-1 text-xs leading-snug text-slate-600">{q.detail}</p> : null}
                     </li>
                   );

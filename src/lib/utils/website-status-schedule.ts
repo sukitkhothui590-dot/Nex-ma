@@ -20,7 +20,8 @@ export function normalizeScheduleTimes(raw: unknown): string[] {
   const out = new Set<string>();
   for (const x of raw) {
     const s = String(x).trim();
-    const m = /^(\d{1,2}):(\d{2})$/.exec(s);
+    /** รองรับ HH:mm และ HH:mm:ss (บางที่บันทึกจาก JSON / DB) */
+    const m = /^(\d{1,2}):(\d{2})(?::\d{1,2})?$/.exec(s);
     if (!m) continue;
     const h = Number(m[1]);
     const min = Number(m[2]);

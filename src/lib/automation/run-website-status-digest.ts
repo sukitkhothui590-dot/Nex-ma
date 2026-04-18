@@ -317,7 +317,11 @@ export async function runWebsiteStatusDigestIfDue(supabase: SupabaseClient): Pro
     const r = await runWebsiteStatusToIntegrations(supabase, { actorUserId: null, mode: "production" });
 
     const iso = new Date().toISOString();
-    const shouldMarkFired = r.sent > 0;
+    /**
+     * mark fired เมื่อ "พยายามยิงแล้ว" (targets > 0) — ถึงแม้ sent = 0 ก็กันซ้ำในหน้าต่างเดียวกัน
+     * เหลือเคส targets = 0 (ไม่มี integration) ที่จะไม่ mark — ให้ user ไปตั้ง integration ก่อน
+     */
+    const shouldMarkFired = r.targets > 0;
     if (shouldMarkFired) {
       const nextFired = { ...fired };
       const nextList = [...(nextFired[dateKey] ?? []), slot];
